@@ -66,9 +66,9 @@ void ALU(unsigned A, unsigned B, char ALUControl, unsigned *ALUresult, char *Zer
 
 	//set Zero = 1 if ALUresult = 0
 	if (*ALUresult == 0)
-		Zero = 1;
+		*Zero = 1;
 	else
-		Zero = 0;
+		*Zero = 0;
 
 }
 
@@ -80,7 +80,7 @@ int instruction_fetch(unsigned PC, unsigned *Mem, unsigned *instruction)
 	unsigned memIndex = PC >> 2;
 
 	//check for word alignment 
-	if (PC % 4 = 0)
+	if (PC % 4 == 0)
 	{
 		*instruction = Mem[memIndex];
 		return 0;
@@ -113,119 +113,110 @@ void instruction_partition(unsigned instruction, unsigned *op, unsigned *r1, uns
 /* 15 Points */
 int instruction_decode(unsigned op, struct_controls *controls)
 {
-	switch (op)
-	{
-			case 0:		//R-type
-				controls->ALUOp = 7;
-				controls->ALUSrc = 0;
-				controls->Branch = 0;
-				controls->Jump = 0;
-				controls->MemRead = 0;
-				controls->MemtoReg = 0;
-				controls->MemWrite = 0;
-				controls->RegDst = 1;
-				controls->RegWrite = 1;
-				break;
-
-			case 2:		//jump
-				controls->ALUOp = 0;
-				controls->ALUSrc = 0;
-				controls->Branch = 0;
-				controls->Jump = 1;
-				controls->MemRead = 0;
-				controls->MemtoReg = 0;
-				controls->MemWrite = 0;
-				controls->RegDst = 0;
-				controls->RegWrite = 0;
-				break;
-
-			case 4:		//beq
-				controls->ALUOp = 1;
-				controls->ALUSrc = 0;
-				controls->Branch = 0;
-				controls->Jump = 0;
-				controls->MemRead = 0;
-				controls->MemtoReg = 2;
-				controls->MemWrite = 0;
-				controls->RegDst = 2;
-				controls->RegWrite = 0;
-				break;
-
-			case 8:		//addi
-				controls->ALUOp = 0;
-				controls->ALUSrc = 1;
-				controls->Branch = 0;
-				controls->Jump = 0;
-				controls->MemRead = 0;
-				controls->MemtoReg = 0;
-				controls->MemWrite = 0;
-				controls->RegDst = 0;
-				controls->RegWrite = 1;
-				break;
-
-			case 10:	//slti
-				controls->ALUOp = 2;
-				controls->ALUSrc = 1;
-				controls->Branch = 0;
-				controls->Jump = 0;
-				controls->MemRead = 0;
-				controls->MemtoReg = 0;
-				controls->MemWrite = 0;
-				controls->RegDst = 0;
-				controls->RegWrite = 1;
-				break;
-
-			case 11:	//sltiu
-				controls->ALUOp = 3;
-				controls->ALUSrc = 1;
-				controls->Branch = 0;
-				controls->Jump = 0;
-				controls->MemRead = 0;
-				controls->MemtoReg = 0;
-				controls->MemWrite = 0;
-				controls->RegDst = 0;
-				controls->RegWrite = 1;
-				break;
-
-			case 15:	//lui
-				controls->ALUOp = 6;
-				controls->ALUSrc = 1;
-				controls->Branch = 0;
-				controls->Jump = 0;
-				controls->MemRead = 0;
-				controls->MemtoReg = 0;
-				controls->MemWrite = 0;
-				controls->RegDst = 0;
-				controls->RegWrite = 1;
-				break;
-
-			case 35:	//lw
-				controls->ALUOp = 0;
-				controls->ALUSrc = 1;
-				controls->Branch = 0;
-				controls->Jump = 0;
-				controls->MemRead = 1;
-				controls->MemtoReg = 0;
-				controls->MemWrite = 1;
-				controls->RegDst = 0;
-				controls->RegWrite = 1;
-				break;
-
-			case 43:	//sw
-				controls->ALUOp = 0;
-				controls->ALUSrc = 1;
-				controls->Branch = 0;
-				controls->Jump = 0;
-				controls->MemRead = 0;
-				controls->MemtoReg = 2;
-				controls->MemWrite = 1;
-				controls->RegDst = 2;
-				controls->RegWrite = 0;
-				break;
-
-			default:
-				return 1;
-	}
+		switch (op)
+		{
+		case 0:		//	000000 0	R format
+			controls->RegDst = 0;
+			controls->Jump = 0;
+			controls->Branch = 0;
+			controls->MemRead = 0;
+			controls->MemtoReg = 0;
+			controls->ALUOp = 7;
+			controls->MemWrite = 0;
+			controls->ALUSrc = 0;
+			controls->RegWrite = 1;
+			break;
+		case 2:		//	000010 2	jump
+			controls->RegDst = 0;
+			controls->Jump = 1;
+			controls->Branch = 0;
+			controls->MemRead = 0;
+			controls->MemtoReg = 0;
+			controls->ALUOp = 0;
+			controls->MemWrite = 0;
+			controls->ALUSrc = 0;
+			controls->RegWrite = 0;
+			break;
+		case 4:		//	000100 4	beq			branch eq
+			controls->RegDst = 2;
+			controls->Jump = 0;
+			controls->Branch = 1;
+			controls->MemRead = 0;
+			controls->MemtoReg = 2;
+			controls->ALUOp = 1;
+			controls->MemWrite = 0;
+			controls->ALUSrc = 0;
+			controls->RegWrite = 0;
+			break;
+		case 8:		//	001000 8	addi		add immediate
+			controls->RegDst = 0;
+			controls->Jump = 0;
+			controls->Branch = 0;
+			controls->MemRead = 0;
+			controls->MemtoReg = 0;
+			controls->ALUOp = 0;
+			controls->MemWrite = 0;
+			controls->ALUSrc = 1;
+			controls->RegWrite = 1;
+			break;
+		case 10:	//	001010 10	slti		set less than immediate
+			controls->RegDst = 1;
+			controls->Jump = 0;
+			controls->Branch = 0;
+			controls->MemRead = 0;
+			controls->MemtoReg = 0;
+			controls->ALUOp = 2;
+			controls->MemWrite = 0;
+			controls->ALUSrc = 0;
+			controls->RegWrite = 1;
+			break;
+		case 11:	//	001011 11	sltiu		set less than immediate u
+			controls->RegDst = 1;
+			controls->Jump = 0;
+			controls->Branch = 0;
+			controls->MemRead = 0;
+			controls->MemtoReg = 0;
+			controls->ALUOp = 3;
+			controls->MemWrite = 0;
+			controls->ALUSrc = 0;
+			controls->RegWrite = 1;
+			break;
+		case 15:	//	001111 15	lui			load upper immediate
+			controls->RegDst = 0;
+			controls->Jump = 0;
+			controls->Branch = 0;
+			controls->MemRead = 0;
+			controls->MemtoReg = 0;
+			controls->ALUOp = 6;
+			controls->MemWrite = 0;
+			controls->ALUSrc = 1;
+			controls->RegWrite = 1;
+			break;
+		case 35:	//	100011 35	lw			load word
+			controls->RegDst = 0;
+			controls->Jump = 0;
+			controls->Branch = 0;
+			controls->MemRead = 1;
+			controls->MemtoReg = 1;
+			controls->ALUOp = 0;
+			controls->MemWrite = 0;
+			controls->ALUSrc = 1;
+			controls->RegWrite = 1;
+			break;
+		case 43:	//	101011 43	sw			store word
+			controls->RegDst = 2;
+			controls->Jump = 0;
+			controls->Branch = 0;
+			controls->MemRead = 0;
+			controls->MemtoReg = 2;
+			controls->ALUOp = 0;
+			controls->MemWrite = 1;
+			controls->ALUSrc = 1;
+			controls->RegWrite = 0;
+			break;
+		default:
+			return 1;
+		}
 	return 0;
 }
 
@@ -243,9 +234,8 @@ void read_register(unsigned r1, unsigned r2, unsigned *Reg, unsigned *data1, uns
 /* 10 Points */
 void sign_extend(unsigned offset, unsigned *extended_value)
 {
-	unsigned sign = offset >> 15;
 	// see if the offset is negative then extend
-	if (sign == 1)
+	if (offset >> 15 == 1)
 		*extended_value = offset | 0xFFFF0000;
 	else // Upper bits should already be zero
 		*extended_value = offset;
