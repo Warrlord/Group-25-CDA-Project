@@ -73,7 +73,9 @@ int instruction_decode(unsigned op, struct_controls *controls)
 /* 5 Points */
 void read_register(unsigned r1, unsigned r2, unsigned *Reg, unsigned *data1, unsigned *data2)
 {
-
+    // Go into respective registers given and copy the data from them
+    *data1 = Reg[r1];
+    *data2 = Reg[r2];
 }
 
 
@@ -81,7 +83,12 @@ void read_register(unsigned r1, unsigned r2, unsigned *Reg, unsigned *data1, uns
 /* 10 Points */
 void sign_extend(unsigned offset, unsigned *extended_value)
 {
-
+    unsigned sign = offset >> 15;
+    // see if the offset is negative then extend
+    if (sign == 1)
+        *extended_value = offset | 0xFFFF0000;
+    else // Upper bits should already be zero
+        *extended_value = offset;
 }
 
 /* ALU operations */
@@ -95,7 +102,23 @@ int ALU_operations(unsigned data1, unsigned data2, unsigned extended_value, unsi
 /* 10 Points */
 int rw_memory(unsigned ALUresult, unsigned data2, char MemWrite, char MemRead, unsigned *memdata, unsigned *Mem)
 {
-
+	// Reading from memory
+	if (MemRead == 1){
+        // check to see if the address is good
+		if((ALUresult % 4) == 0)
+			*memdata = Mem[ALUresult >> 2];
+		else // return since its an invaild memory address
+			return 1;
+	}
+	// Writing to Memory
+	if (MemWrite == 1){
+        // Check to see if the address is good
+		if((ALUresult % 4) == 0)
+			Mem[ALUresult >> 2] = data2;
+		else // return since its an invaild memory address
+			return 1;
+	}
+	return 0;
 }
 
 
@@ -103,7 +126,22 @@ int rw_memory(unsigned ALUresult, unsigned data2, char MemWrite, char MemRead, u
 /* 10 Points */
 void write_register(unsigned r2, unsigned r3, unsigned memdata, unsigned ALUresult, char RegWrite, char RegDst, char MemtoReg, unsigned *Reg)
 {
-
+    // Actually check if your writing to the register lolz
+	if(RegWrite == 1){
+		 // Check if writing with memdata but with the first register
+		 if (MemtoReg == 1 && RegDst == 0)
+			Reg[r2] = memdata;
+		 // Check if writing with memdata but with the second register
+		 else if(MemtoReg == 1 && RegDst == 1)
+			 Reg[r3] = memdata;
+		 // Check that we are writing to the first register with ALUresult
+		 else if (MemtoReg == 0 && RegDst == 0)
+			Reg[r2] = ALUresult;
+		 // Check that we are writing to the second register with ALUresult
+		 else if (MemtoReg == 0 && RegDst == 1)
+			Reg[r3] = ALUresult;
+	}
+	// Otherwise do nothing
 }
 
 /* PC update */
