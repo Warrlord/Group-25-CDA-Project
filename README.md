@@ -95,7 +95,52 @@ void sign_extend(unsigned offset, unsigned *extended_value)
 /* 10 Points */
 int ALU_operations(unsigned data1, unsigned data2, unsigned extended_value, unsigned funct, char ALUOp, char ALUSrc, unsigned *ALUresult, char *Zero)
 {
-
+	//check ALUSrc to see which data we are operating on
+	if (ALUSrc == 1)
+	{
+		data2 = extended_value;
+	}
+	//7 in ALUOp means that it's an R type
+	if (ALUOp == 7)
+	{
+		switch (funct)
+		{
+			//add
+			case 32:
+				ALUOp = 0;
+				break;
+			//sub
+			case 34:
+				ALUOp = 1;
+				break;
+			//slt
+			case 42:
+				ALUOp = 2;
+			//sltu
+			case 43:
+				ALUOp = 3;
+			//and
+			case 36:
+				ALUOp = 4;
+			//or 
+			case 37:
+				ALUOp = 5;
+			//lui
+			case 6:
+				ALUOp = 6;
+			//nor
+			case 39:
+				ALUOp = 7;
+			default:
+				return 1;
+		}
+		ALU(data1, data2, ALUOp, ALUresult, Zero);
+	}
+	//send to ALU if not func
+	else
+	{
+		ALU(data1, data2, ALUOp, ALUresult, Zero);
+	}
 }
 
 /* Read / Write Memory */
